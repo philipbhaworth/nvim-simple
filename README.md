@@ -1,4 +1,4 @@
-# Neovim Configuration (Lightweight • Fast • DevOps-Oriented)
+# Neovim Configuration (Lightweight - Fast - Minimal as I can)
 
 This Neovim setup is designed for operations, systems administration, and configuration-heavy workflows.  
 It focuses on stability, speed, and predictable behavior while staying minimal and terminal-friendly.
