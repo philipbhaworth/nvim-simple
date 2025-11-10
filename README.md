@@ -13,8 +13,7 @@ Key features:
 
 Ideal for:
 - Linux/Unix systems work  
-- HPC / Research computing  
-- DevOps / SRE environments  
+- HPC / Research computing   
 - Scripting in Bash, Python, etc.
 
 ## Requirements
