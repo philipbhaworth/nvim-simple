@@ -5,15 +5,17 @@ It focuses on stability, speed, and predictable behavior while staying minimal a
 
 Key features:
 - Fast fuzzy finding with **fzf-lua**
-- Clean directory editing with **oil.nvim**
+- Clean directory editing with **oil.nvim** (replaces netrw workflow)
 - Auto-installed LSP servers, linters, and formatters through **Mason**
 - Lightweight autocompletion (nvim-cmp, no snippets)
-- YAML/TOML/JSON schema support
-- Clear keymaps and no IDE bloat
+- YAML/TOML/JSON schema support with Ansible LSP
+- Smart keymaps and quality-of-life improvements
+- Modern colorscheme (Kanagawa)
 
 Ideal for:
 - Linux/Unix systems work  
-- HPC / Research computing   
+- HPC / Research computing
+- Ansible/infrastructure automation
 - Scripting in Bash, Python, etc.
 
 ## Requirements
@@ -25,23 +27,20 @@ A few command-line tools for best performance.
 ### Arch Linux
 ```bash
 sudo pacman -S neovim git ripgrep fzf fd shellcheck shfmt python-ruff prettier yamllint
-````
+```
 
 ### Debian / Ubuntu
-
 ```bash
 sudo apt update
 sudo apt install neovim git ripgrep fzf fd-find shellcheck shfmt python3-ruff prettier yamllint
 ```
 
 ### Fedora
-
 ```bash
 sudo dnf install neovim git ripgrep fzf fd-find ShellCheck shfmt python3-ruff prettier yamllint
 ```
 
 ### macOS (Homebrew)
-
 ```bash
 brew install neovim git ripgrep fzf fd shellcheck shfmt ruff prettier yamllint
 ```
@@ -51,13 +50,11 @@ brew install neovim git ripgrep fzf fd shellcheck shfmt ruff prettier yamllint
 ## Installation
 
 Clone this configuration into your Neovim directory:
-
 ```bash
 git clone <your-repo-url> ~/.config/nvim
 ```
 
 Run Neovim:
-
 ```bash
 nvim
 ```
@@ -78,24 +75,52 @@ Mason will auto-install LSPs and tools via `mason-tool-installer`.
 
 ### Directory Editing (oil.nvim)
 
+Oil provides a buffer-based file manager - edit your filesystem like a text file.
+
 * `-` – open parent directory in Oil
-* `<CR>` – open file/dir
-* `g.` – toggle dotfiles
+* `<leader>o` – open Oil in floating window
+* `<CR>` – open file/directory
+* `g.` – toggle hidden files
 * `g?` – help
-* `<C-s>`, `<C-h>`, `<C-t>` – split, vsplit, tab
-* `<C-p>` – preview
-* `:w` – apply renames/moves/deletes
+* `<C-v>` – open in vertical split
+* `<C-x>` – open in horizontal split
+* `:w` – apply changes (renames/moves/deletes)
 
-### Netrw fallback
+**Why Oil over netrw?**
+- Edit filesystem like text (rename multiple files, etc.)
+- Shows permissions and file sizes
+- More intuitive for batch operations
+- Better split/preview support
 
-Oil **does not** override netrw by default.
+### Quick Save/Quit
 
-Use:
+* `<leader>w` – save file
+* `<leader>q` – quit
+* `<leader>x` – save and quit
 
-* `nvim .`
-* `:edit <dir>`
+### Buffer Management
 
-Set `default_file_explorer = true` if you prefer Oil everywhere.
+* `<leader>bn` – next buffer
+* `<leader>bp` – previous buffer
+* `<leader>bd` – close buffer
+
+### Split Navigation
+
+* `<C-h>` – move to left split
+* `<C-j>` – move to bottom split
+* `<C-k>` – move to top split
+* `<C-l>` – move to right split
+
+### Terminal
+
+* `<leader>t` – toggle terminal split
+* `<Esc><Esc>` – exit terminal mode
+
+### Comments
+
+* `gcc` – toggle comment on line (normal mode)
+* `gc` – toggle comment on selection (visual mode)
+* `<leader>/` – toggle comment
 
 ---
 
@@ -103,12 +128,24 @@ Set `default_file_explorer = true` if you prefer Oil everywhere.
 
 ### LSPs enabled:
 
-* YAML (yamlls)
+* YAML (yamlls) – with GitHub Actions & docker-compose schemas
+* Ansible (ansiblels) – playbooks, roles, tasks
 * Bash (bashls)
 * Python (pyright)
 * TOML (taplo)
 * Docker (dockerls)
-* JSON (jsonls)
+* JSON (jsonls) – with schemastore.nvim
+
+### LSP Keymaps
+
+* `gd` – goto definition
+* `gr` – find references
+* `K` – hover documentation
+* `<leader>rn` – rename symbol
+* `<leader>ca` – code actions
+* `<leader>e` – show line diagnostics
+* `]d` – next diagnostic
+* `[d` – previous diagnostic
 
 ### Formatters (Conform)
 
@@ -119,7 +156,6 @@ Set `default_file_explorer = true` if you prefer Oil everywhere.
 * JSON/Markdown: prettier
 
 Trigger:
-
 ```text
 <leader>f
 ```
@@ -129,9 +165,9 @@ Trigger:
 * YAML: yamllint
 * Shell: shellcheck
 * Python: ruff
+* Ansible: ansible-lint
 
 Trigger:
-
 ```text
 <leader>ll
 ```
@@ -152,8 +188,80 @@ No snippet engine is included for simplicity.
 
 ---
 
-## Core Vim Keybindings (quick reference)
+## Configuration Philosophy
 
+### Core Options
+
+* **No relative line numbers** – absolute numbers for clearer reference
+* **2-space indentation** – standard for YAML, JSON, configs (4-space for Python)
+* **Smart search** – case-insensitive unless capitals used
+* **System clipboard** – seamless copy/paste with OS
+* **No swap files** – cleaner workflow, use git instead
+* **Mouse enabled** – quick splits and scrolling when needed
+
+### Colorscheme
+
+**Kanagawa** (wave theme by default)
+- Warm, easy-on-the-eyes palette
+- Excellent syntax highlighting
+- Clean floating windows
+- Alternative variants: `dragon` (darker), `lotus` (light)
+
+Switch themes:
+```vim
+:colorscheme kanagawa-wave
+:colorscheme kanagawa-dragon
+:colorscheme kanagawa-lotus
+```
+
+---
+
+## Leader Key
+
+The leader key is:
+```
+<Space>
+```
+
+Used for all custom mappings.
+This keeps commands short, clear, and ergonomic.
+
+### Full Leader Key Reference
+```
+File Operations:
+  <leader>w           Save file
+  <leader>q           Quit
+  <leader>x           Save and quit
+
+Finding:
+  <leader>ff          Find files
+  <leader>fg          Live grep
+  <leader>fb          Buffers
+  <leader>fh          Help tags
+
+File Explorer:
+  <leader>o           Oil (floating)
+
+Buffers:
+  <leader>bn          Next buffer
+  <leader>bp          Previous buffer
+  <leader>bd          Close buffer
+
+Code:
+  <leader>f           Format buffer
+  <leader>ll          Run linter
+  <leader>rn          LSP rename
+  <leader>ca          Code action
+  <leader>e           Line diagnostics
+  <leader>/           Toggle comment
+
+Terminal:
+  <leader>t           Open terminal split
+```
+
+---
+
+## Core Vim Keybindings (quick reference)
 ```
 Movement:
   h j k l       basic motion
@@ -172,62 +280,19 @@ Search:
   /text         forward search
   ?text         backward search
   n / N         next / previous match
+  <Esc>         clear search highlight
 
 Splits:
   :sp / :vsp            split / vsplit
-  <C-w>h/j/k/l          move between splits
+  <C-h/j/k/l>           move between splits
   <C-w>q                close split
 
 Buffers:
   :bnext / :bprev       next / previous buffer
   :bd                   delete buffer
-```
 
----
-
-## Leader Key
-
-The leader key is:
-
-```
-<Space>
-```
-
-Used for all custom mappings.
-This keeps commands short, clear, and ergonomic.
-
-Example:
-
-```
-<leader>ff  → Find files
-<leader>f   → Format file
-<leader>ll  → Lint file
-<leader>rn  → LSP rename
-<leader>ca  → Code action
-```
-
----
-
-## Directory Navigation Cheat Sheet
-
-```
-Oil (directory editor)
-  :Oil                Open Oil
-  :Oil --float        Floating Oil
-  -                   Open parent directory
-  g.                  Toggle dotfiles
-  <CR>                Open entry
-  :w                  Apply changes
-
-fzf-lua (fuzzy finder)
-  <leader>ff          Files
-  <leader>fg          Live grep
-  <leader>fb          Buffers
-  <leader>fh          Help
-
-netrw (fallback)
-  nvim .              Open directory
-  :edit <dir>         Open directory
+Diagnostics:
+  ]d / [d               next / previous diagnostic
 ```
 
 ---
@@ -236,11 +301,42 @@ netrw (fallback)
 
 This configuration is meant to:
 
-* stay minimal
-* avoid heavy IDE plugins
-* rely on terminal tools
-* provide strong defaults for YAML/TOML/JSON/Bash/Python
-* support quick file movement and directory work
-* be fully reproducible across machines
+* Stay minimal and fast
+* Avoid heavy IDE plugins
+* Rely on terminal tools where possible
+* Provide strong defaults for sysadmin languages (YAML/TOML/JSON/Bash/Python/Ansible)
+* Support quick file movement and directory operations
+* Be fully reproducible across machines
+* Offer quality-of-life improvements without bloat
 
 ---
+
+## Troubleshooting
+
+### LSP not working?
+Check Mason installations:
+```vim
+:Mason
+```
+
+### Want to recompile colorscheme?
+After config changes (if you enable compilation):
+```vim
+:KanagawaCompile
+```
+
+### Linter/formatter missing?
+Mason auto-installs on startup, but you can manually trigger:
+```vim
+:MasonToolsInstall
+```
+
+### Oil not showing hidden files?
+Press `g.` in Oil buffer to toggle hidden file visibility.
+
+---
+
+## Contributing
+
+This is a personal config, but feel free to fork and adapt.  
+Keep it simple. Keep it fast. Keep it focused.
