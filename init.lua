@@ -74,12 +74,19 @@ vim.keymap.set("n", "<C-l>", "<C-w>l", { desc = "Move to right split" })
 vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Next diagnostic" })
 vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Prev diagnostic" })
 
--- Terminal toggle
-vim.keymap.set("n", "<leader>t", function()
+-- Horizontal terminal split
+vim.keymap.set("n", "<leader>th", function()
   vim.cmd("split | terminal")
   vim.cmd("resize 15")
   vim.cmd("startinsert")
-end, { desc = "Open terminal split" })
+end, { desc = "Open terminal split (horizontal)" })
+
+-- Vertical terminal split
+vim.keymap.set("n", "<leader>tv", function()
+  vim.cmd("vsplit | terminal")
+  vim.cmd("vertical resize 80")
+  vim.cmd("startinsert")
+end, { desc = "Open terminal split (vertical)" })
 
 -- Easy terminal exit
 vim.keymap.set("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
