@@ -51,7 +51,7 @@ brew install neovim git ripgrep fzf fd shellcheck shfmt ruff prettier yamllint
 
 Clone this configuration into your Neovim directory:
 ```bash
-git clone <your-repo-url> ~/.config/nvim
+git clone https://github.com/philipbhaworth/nvim-simple.git ~/.config/nvim
 ```
 
 Run Neovim:
