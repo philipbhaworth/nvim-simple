@@ -9,19 +9,160 @@ vim.opt.rtp:prepend(lazypath)
 -- core options ----------------------------------------------------------------
 vim.g.mapleader = " "
 vim.opt.number = true
-vim.opt.relativenumber = true
+vim.opt.relativenumber = false
 vim.opt.termguicolors = true
 vim.opt.updatetime = 200
 vim.opt.signcolumn = "yes"
 
+-- Tab/indentation settings
+vim.opt.expandtab = true
+vim.opt.shiftwidth = 2
+vim.opt.tabstop = 2
+vim.opt.softtabstop = 2
+vim.opt.smartindent = true
+
+-- Search settings
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+vim.opt.hlsearch = true
+
+-- Clipboard
+vim.opt.clipboard = "unnamedplus"
+
+-- Mouse support
+vim.opt.mouse = "a"
+
+-- Command-line completion
+vim.opt.wildmode = "longest:full,full"
+
+-- Disable backup files
+vim.opt.swapfile = false
+vim.opt.backup = false
+vim.opt.writebackup = false
+
+-- Filetype-specific overrides
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "python",
+  callback = function()
+    vim.opt_local.shiftwidth = 4
+    vim.opt_local.tabstop = 4
+    vim.opt_local.softtabstop = 4
+  end,
+})
+
+-- Core keymaps ----------------------------------------------------------------
+-- Clear search highlight
+vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>", { desc = "Clear search highlight" })
+
+-- Quick save/quit
+vim.keymap.set("n", "<leader>w", "<cmd>w<CR>", { desc = "Save file" })
+vim.keymap.set("n", "<leader>q", "<cmd>q<CR>", { desc = "Quit" })
+vim.keymap.set("n", "<leader>x", "<cmd>wq<CR>", { desc = "Save and quit" })
+
+-- Buffer navigation
+vim.keymap.set("n", "<leader>bd", "<cmd>bd<CR>", { desc = "Close buffer" })
+vim.keymap.set("n", "<leader>bn", "<cmd>bnext<CR>", { desc = "Next buffer" })
+vim.keymap.set("n", "<leader>bp", "<cmd>bprevious<CR>", { desc = "Previous buffer" })
+
+-- Better split navigation
+vim.keymap.set("n", "<C-h>", "<C-w>h", { desc = "Move to left split" })
+vim.keymap.set("n", "<C-j>", "<C-w>j", { desc = "Move to bottom split" })
+vim.keymap.set("n", "<C-k>", "<C-w>k", { desc = "Move to top split" })
+vim.keymap.set("n", "<C-l>", "<C-w>l", { desc = "Move to right split" })
+
+-- Diagnostic navigation
+vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Next diagnostic" })
+vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Prev diagnostic" })
+
+-- Terminal toggle
+vim.keymap.set("n", "<leader>t", function()
+  vim.cmd("split | terminal")
+  vim.cmd("resize 15")
+  vim.cmd("startinsert")
+end, { desc = "Open terminal split" })
+
+-- Easy terminal exit
+vim.keymap.set("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
+
+-- Plugin setup ----------------------------------------------------------------
 require("lazy").setup({
+  -- Colorschemes
+  {
+    "rebelot/kanagawa.nvim",
+    priority = 1000,
+    config = function()
+      require('kanagawa').setup({
+        compile = false,
+        undercurl = true,
+        commentStyle = { italic = true },
+        functionStyle = {},
+        keywordStyle = { italic = true },
+        statementStyle = { bold = true },
+        typeStyle = {},
+        transparent = false,
+        dimInactive = false,
+        terminalColors = true,
+        colors = {
+          theme = {
+            all = {
+              ui = {
+                bg_gutter = "none"  -- Remove gutter background
+              }
+            }
+          }
+        },
+        overrides = function(colors)
+          local theme = colors.theme
+          return {
+            -- Transparent floating windows
+            NormalFloat = { bg = "none" },
+            FloatBorder = { bg = "none" },
+            FloatTitle = { bg = "none" },
+            
+            -- Darker background for terminal/special windows
+            NormalDark = { fg = theme.ui.fg_dim, bg = theme.ui.bg_m3 },
+            
+            -- Plugin-specific overrides
+            LazyNormal = { bg = theme.ui.bg_m3, fg = theme.ui.fg_dim },
+            MasonNormal = { bg = theme.ui.bg_m3, fg = theme.ui.fg_dim },
+            
+            -- Better completion menu
+            Pmenu = { fg = theme.ui.shade0, bg = theme.ui.bg_p1 },
+            PmenuSel = { fg = "NONE", bg = theme.ui.bg_p2 },
+            PmenuSbar = { bg = theme.ui.bg_m1 },
+            PmenuThumb = { bg = theme.ui.bg_p2 },
+          }
+        end,
+        theme = "wave",  -- Default: "wave", "dragon" for dark, "lotus" for light
+        background = {
+          dark = "wave",   -- or "dragon" for a different dark variant
+          light = "lotus"
+        },
+      })
+      
+      vim.cmd.colorscheme("kanagawa")
+    end,
+  },
+  
+  -- Alternative colorscheme (uncomment to use instead of kanagawa)
+  -- {
+  --   "KijitoraFinch/nanode.nvim",
+  --   priority = 1000,
+  --   config = function()
+  --     require("nanode").setup({
+  --       transparent = false,
+  --     })
+  --     vim.cmd.colorscheme("nanode")
+  --   end,
+  -- },
   -- Treesitter (syntax/indent)
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
     opts = {
       ensure_installed = {
-        "bash","python","yaml","toml","dockerfile","lua","json","markdown","ini"
+        "bash", "python", "yaml", "toml", "dockerfile", "lua", "json", "markdown", "ini",
+        "regex", "vim", "gitcommit", "diff",
       },
       highlight = { enable = true },
       indent = { enable = true },
@@ -32,49 +173,63 @@ require("lazy").setup({
   -- Picker: fzf-lua (fast, no telescope)
   {
     "ibhagwan/fzf-lua",
-    dependencies = { "nvim-tree/nvim-web-devicons" }, -- optional, nice icons
+    dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
       local fzf = require("fzf-lua")
       fzf.setup({})
-      vim.keymap.set("n","<leader>ff", fzf.files,     { desc="Find files" })
-      vim.keymap.set("n","<leader>fg", fzf.live_grep, { desc="Grep (ripgrep)" })
-      vim.keymap.set("n","<leader>fb", fzf.buffers,   { desc="Buffers" })
-      vim.keymap.set("n","<leader>fh", fzf.help_tags, { desc="Help" })
+      vim.keymap.set("n", "<leader>ff", fzf.files,     { desc = "Find files" })
+      vim.keymap.set("n", "<leader>fg", fzf.live_grep, { desc = "Grep (ripgrep)" })
+      vim.keymap.set("n", "<leader>fb", fzf.buffers,   { desc = "Buffers" })
+      vim.keymap.set("n", "<leader>fh", fzf.help_tags, { desc = "Help" })
     end,
   },
 
   -- File explorer: oil.nvim 
   {
-  "stevearc/oil.nvim",
-  -- Optional icons; pick one (mini.icons is very light)
-  dependencies = {
-    { "nvim-tree/nvim-web-devicons", lazy = true }, -- or { "nvim-mini/mini.icons", opts = {} }
+    "stevearc/oil.nvim",
+    dependencies = {
+      { "nvim-tree/nvim-web-devicons", lazy = true },
+    },
+    lazy = false,
+    opts = {
+      default_file_explorer = false,
+      columns = { "icon", "permissions", "size" },
+      view_options = {
+        show_hidden = true,
+        is_hidden_file = function(name, bufnr)
+          return vim.startswith(name, ".")
+        end,
+        is_always_hidden = function(name, bufnr)
+          return name == ".." or name == ".git"
+        end,
+      },
+      keymaps = {
+        ["<C-v>"] = "actions.select_vsplit",
+        ["<C-x>"] = "actions.select_split",
+      },
+    },
+    config = function(_, opts)
+      require("oil").setup(opts)
+      vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory (Oil)" })
+      vim.keymap.set("n", "<leader>o", "<CMD>Oil --float<CR>", { desc = "Oil (float)" })
+    end,
   },
-  -- Oil’s author discourages lazy-loading for reliability; keep lazy=false
-  lazy = false,
-  opts = {
-    -- Keep netrw as the default explorer; open Oil on demand
-    default_file_explorer = false,
-    -- Show basic columns; remove "icon" if you don’t want icons
-    columns = { "icon" },
-    view_options = { show_hidden = false }, -- toggle in buffer via "g."
-    keymaps = {
-      -- Leave defaults; you’ll get: g? help, <CR> open, - up, g. toggle hidden, etc.
+
+  -- Comments
+  {
+    "numToStr/Comment.nvim",
+    opts = {},
+    keys = {
+      { "gcc", mode = "n", desc = "Comment line" },
+      { "gc", mode = "v", desc = "Comment selection" },
+      { "<leader>/", mode = { "n", "v" }, desc = "Toggle comment" },
     },
   },
-  config = function(_, opts)
-    require("oil").setup(opts)
-    -- Open parent directory of current file (Vinegar-style)
-    vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory (Oil)" })
-    -- Optional: open Oil floating window
-    vim.keymap.set("n", "<leader>o", "<CMD>Oil --float<CR>", { desc = "Oil (float)" })
-  end,
- },
 
   -- Mason core (manages LSP/linters/formatters)
   { "williamboman/mason.nvim", config = function() require("mason").setup() end },
 
-  -- Auto-install tools on startup (one-and-done per machine)
+  -- Auto-install tools on startup
   {
     "WhoIsSethDaniel/mason-tool-installer.nvim",
     config = function()
@@ -87,6 +242,7 @@ require("lazy").setup({
           "taplo",
           "dockerfile-language-server",
           "json-lsp",
+          "ansible-language-server",
 
           -- Linters/formatters
           "yamllint",
@@ -94,18 +250,19 @@ require("lazy").setup({
           "ruff",
           "shfmt",
           "prettier",
+          "ansible-lint",
         },
         run_on_start = true,
         auto_update = false,
-        start_delay = 100, -- ms after UI is ready
+        start_delay = 100,
       })
     end,
   },
 
-  -- Keep nvim-lspconfig in runtime for defaults (no .setup() calls)
+  -- Keep nvim-lspconfig in runtime for defaults
   { "neovim/nvim-lspconfig" },
 
-  -- JSON/YAML schemas to improve validation
+  -- JSON/YAML schemas
   { "b0o/schemastore.nvim" },
 
   -- Formatting (Conform)
@@ -113,18 +270,18 @@ require("lazy").setup({
     "stevearc/conform.nvim",
     opts = {
       formatters_by_ft = {
-        yaml = { "yamlfmt" },         -- or "prettier" if you prefer
-        python = { "ruff_format" },   -- or "black"
+        yaml = { "yamlfmt" },
+        python = { "ruff_format" },
         sh = { "shfmt" },
         toml = { "taplo" },
         json = { "prettier" },
         markdown = { "prettier" },
       },
-      format_on_save = false,         -- stay explicit
+      format_on_save = false,
     },
     config = function(_, opts)
       require("conform").setup(opts)
-      vim.keymap.set({ "n","v" }, "<leader>f",
+      vim.keymap.set({ "n", "v" }, "<leader>f",
         function() require("conform").format({ async = true, lsp_fallback = true }) end,
         { desc = "Format buffer/selection" })
     end
@@ -139,6 +296,7 @@ require("lazy").setup({
         yaml = { "yamllint" },
         sh = { "shellcheck" },
         python = { "ruff" },
+        ansible = { "ansible_lint" },
       }
       vim.keymap.set("n", "<leader>ll", function() lint.try_lint() end, { desc = "Run linter" })
     end
@@ -161,13 +319,13 @@ require("lazy").setup({
     config = function()
       local cmp = require("cmp")
       cmp.setup({
-        snippet = { expand = function() end }, -- no snippet engine
+        snippet = { expand = function() end },
         mapping = cmp.mapping.preset.insert({
-          ["<CR>"]     = cmp.mapping.confirm({ select = true }),
-          ["<C-Space>"]= cmp.mapping.complete(),
-          ["<C-n>"]    = cmp.mapping.select_next_item(),
-          ["<C-p>"]    = cmp.mapping.select_prev_item(),
-          ["<C-e>"]    = cmp.mapping.abort(),
+          ["<CR>"]      = cmp.mapping.confirm({ select = true }),
+          ["<C-Space>"] = cmp.mapping.complete(),
+          ["<C-n>"]     = cmp.mapping.select_next_item(),
+          ["<C-p>"]     = cmp.mapping.select_prev_item(),
+          ["<C-e>"]     = cmp.mapping.abort(),
         }),
         sources = {
           { name = "nvim_lsp" },
@@ -191,12 +349,12 @@ vim.api.nvim_create_autocmd('LspAttach', {
     local map = function(mode, lhs, rhs, desc)
       vim.keymap.set(mode, lhs, rhs, { buffer = args.buf, desc = desc })
     end
-    map("n","gd", vim.lsp.buf.definition,            "Goto def")
-    map("n","gr", vim.lsp.buf.references,            "Refs")
-    map("n","K",  vim.lsp.buf.hover,                 "Hover")
-    map("n","<leader>rn", vim.lsp.buf.rename,        "Rename")
-    map("n","<leader>ca", vim.lsp.buf.code_action,   "Code action")
-    map("n","<leader>e",  vim.diagnostic.open_float, "Line diag")
+    map("n", "gd", vim.lsp.buf.definition,            "Goto def")
+    map("n", "gr", vim.lsp.buf.references,            "Refs")
+    map("n", "K",  vim.lsp.buf.hover,                 "Hover")
+    map("n", "<leader>rn", vim.lsp.buf.rename,        "Rename")
+    map("n", "<leader>ca", vim.lsp.buf.code_action,   "Code action")
+    map("n", "<leader>e",  vim.diagnostic.open_float, "Line diag")
   end,
 })
 
@@ -230,10 +388,23 @@ vim.lsp.config('yamlls', {
     },
   },
 })
+
+vim.lsp.config('ansiblels', {
+  root_markers = { "ansible.cfg", "playbook.yml", "roles/", "site.yml" },
+  settings = {
+    ansible = {
+      python = { interpreterPath = "python3" },
+      ansible = { path = "ansible" },
+      validation = { enabled = true, lint = { enabled = true } },
+    },
+  },
+})
+
 vim.lsp.config('bashls', {})
 vim.lsp.config('pyright', {})
-vim.lsp.config('taplo', {})      -- TOML
+vim.lsp.config('taplo', {})
 vim.lsp.config('dockerls', {})
+
 vim.lsp.config('jsonls', {
   settings = { json = { schemas = (function()
     local ok2, s = pcall(require, "schemastore")
@@ -242,5 +413,4 @@ vim.lsp.config('jsonls', {
 })
 
 -- Enable the servers
-vim.lsp.enable({ 'yamlls','bashls','pyright','taplo','dockerls','jsonls' })
-
+vim.lsp.enable({ 'yamlls', 'bashls', 'pyright', 'taplo', 'dockerls', 'jsonls', 'ansiblels' })
