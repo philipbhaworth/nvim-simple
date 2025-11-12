@@ -177,6 +177,32 @@ require("lazy").setup({
     config = function(_, opts) require("nvim-treesitter.configs").setup(opts) end,
   },
 
+  -- Indent guides
+  {
+    "lukas-reineke/indent-blankline.nvim",
+    main = "ibl",
+    event = { "BufReadPost", "BufNewFile" },
+    opts = {
+      indent = {
+        char = "▏",
+      },
+      scope = {
+        enabled = true,
+        show_start = false,
+        show_end = false,
+      },
+      exclude = {
+        filetypes = {
+          "help",
+          "terminal",
+          "lazy",
+          "mason",
+          "oil",
+        },
+      },
+    },
+  },
+
   -- Picker: fzf-lua (fast, no telescope)
   {
     "ibhagwan/fzf-lua",
