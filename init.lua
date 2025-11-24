@@ -147,7 +147,7 @@ require("lazy").setup({
           type = { italic = true },
           parameter = { italic = true },
         },
-        filter = "pro", -- pro | octagon | machine | ristretto | spectrum | classic
+        filter = "octagon", -- pro | octagon | machine | ristretto | spectrum | classic
         inc_search = "background",
         background_clear = {
           "toggleterm",
@@ -371,9 +371,25 @@ require("lazy").setup({
                 mapping = cmp.mapping.preset.insert({
                     ["<CR>"]      = cmp.mapping.confirm({ select = true }),
                     ["<C-Space>"] = cmp.mapping.complete(),
-                    ["<C-n>"]     = cmp.mapping.select_next_item(),
-                    ["<C-p>"]     = cmp.mapping.select_prev_item(),
                     ["<C-e>"]     = cmp.mapping.abort(),
+                    
+                    -- Tab to cycle forward through suggestions
+                    ["<Tab>"] = cmp.mapping(function(fallback)
+                        if cmp.visible() then
+                            cmp.select_next_item()
+                        else
+                            fallback()
+                        end
+                    end, { "i", "s" }),
+                    
+                    -- Shift-Tab to cycle backward through suggestions
+                    ["<S-Tab>"] = cmp.mapping(function(fallback)
+                        if cmp.visible() then
+                            cmp.select_prev_item()
+                        else
+                            fallback()
+                        end
+                    end, { "i", "s" }),
                 }),
                 sources = {
                     { name = "nvim_lsp" },
